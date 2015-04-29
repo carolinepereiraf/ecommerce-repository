@@ -15,10 +15,17 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
+import org.apache.log4j.Logger;
+
 import br.com.ecommerce.models.Person;
 
 @Path("/people")
 public class PeopleResource {
+
+	/**
+	 * Log
+	 */
+	static Logger log = Logger.getLogger(PeopleResource.class);
 
 	// Mapa estatico para testes
 	static private Map<Integer, Person> peopleMap;
@@ -35,12 +42,15 @@ public class PeopleResource {
 
 	/**
 	 * Retorna todas as pessoas existentes com um limite
+	 * 
 	 * @param limit
 	 * @return
 	 */
 	@GET
 	@Produces("application/json")
 	public List<Person> getPeople(@QueryParam("limit") int limit) {
+		log.info("Returning people, limit = " + limit);
+
 		if (limit == 0) {
 			return new ArrayList<Person>(peopleMap.values());
 		}
@@ -62,7 +72,13 @@ public class PeopleResource {
 	@GET
 	@Produces("application/json")
 	public Person getPerson(@PathParam("personId") int id) {
-		return peopleMap.get(id);
+		Person person = peopleMap.get(id);
+		if (person != null) {
+			log.info("Returning person " + person.getName());
+		} else {
+			log.info("No person found for ID " + id);
+		}
+		return person;
 	}
 
 	/**
@@ -78,9 +94,10 @@ public class PeopleResource {
 	@Produces("application/json")
 	public String addPerson(@FormParam("personId") int personId,
 			@FormParam("email") String email, @FormParam("name") String name) {
-
 		Person person = new Person(personId, email, name);
 		peopleMap.put(person.getId(), person);
+		log.info("Person " + person.getName() + " successfully added.");
+
 		String message = person.getName() + " adicionado com sucesso.";
 		return message;
 	}
@@ -95,9 +112,10 @@ public class PeopleResource {
 	@DELETE
 	@Produces("application/json")
 	public String removePerson(@PathParam("personId") int id) {
-		String name = peopleMap.get(id).getName();
-		peopleMap.remove(id);
-		String message = "Pessoa de nome " + name + " removida com sucesso.";
+		Person person = peopleMap.remove(id);
+		log.info(person.getName() + " successfully removed.");
+
+		String message = person.getName() + " removido com sucesso.";
 		return message;
 	}
 }

@@ -15,10 +15,17 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 
+import org.apache.log4j.Logger;
+
 import br.com.ecommerce.models.Product;
 
 @Path("/products")
 public class ProductsResource {
+
+	/**
+	 * Log
+	 */
+	static Logger log = Logger.getLogger(ProductsResource.class);
 
 	// Mapa estatico para testes
 	static private Map<Integer, Product> productsMap;
@@ -35,12 +42,15 @@ public class ProductsResource {
 
 	/**
 	 * Lista todos os produtos existentes com um limite
+	 * 
 	 * @param limit
 	 * @return
 	 */
 	@GET
 	@Produces("application/json")
 	public List<Product> getProducts(@QueryParam("limit") int limit) {
+		log.info("Returning products, limit = " + limit);
+		
 		if (limit == 0) {
 			return new ArrayList<Product>(productsMap.values());
 		}
@@ -62,6 +72,12 @@ public class ProductsResource {
 	@GET
 	@Produces("application/json")
 	public Product getProduct(@PathParam("productId") int id) {
+		Product product = productsMap.get(id);
+		if (product != null) {
+			log.info("Returning product " + product.getName());
+		} else {
+			log.info("No product found for ID " + id);
+		}
 		return productsMap.get(id);
 	}
 
@@ -80,6 +96,8 @@ public class ProductsResource {
 			@FormParam("price") Double price, @FormParam("name") String name) {
 		Product product = new Product(productId, price, name);
 		productsMap.put(product.getId(), product);
+		log.info("Person " + product.getName() + " successfully added.");
+		
 		String message = product.getName() + " adicionado com sucesso.";
 		return message;
 	}
@@ -96,6 +114,8 @@ public class ProductsResource {
 	public String removeProduct(@PathParam("productId") int id) {
 		String name = productsMap.get(id).getName();
 		productsMap.remove(id);
+		log.info(name + " successfully removed.");
+		
 		String message = "Produto " + name + " removido com sucesso.";
 		return message;
 	}
